@@ -2,17 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Rock : MonoBehaviour
+public class Point : MonoBehaviour
 {
-    [SerializeField] int penalty = 500;
-    
+    [SerializeField] int point = 500;
 
-    public void PenaltyPoint()
+    public void GetPoint()
     {
         Bank bank = GetComponent<Bank>();
         if (bank == null) { return; }
-        bank.Withdraw(penalty);
+        bank.Deposit(point);
         Destroy(this.gameObject);
-        Debug.Log("point down");
+        Debug.Log("point up");
     }
 }

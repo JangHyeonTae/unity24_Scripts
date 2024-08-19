@@ -9,24 +9,28 @@ public class Ball : MonoBehaviour
     [SerializeField] Vector3 ballVector = new Vector3(-0.001f,0,0);
 
     PlayerMovement movement;
-    BallCrash crash;
 
     Vector3 startScale;
     Vector3 startPosition;
 
     public bool isTriggered =false;
-    //public bool pointTriggered = false;
+    public bool pointTriggered = false;
 
     Rock rock;
     Bank bank;
+    Point point;
+    //private InstantiateCreate instant;
     [SerializeField] int pointUp = 1;
     [SerializeField] int bumpPoint = 5;
     void Start()
     {
+        //싱글톤 공부
         movement = FindObjectOfType<PlayerMovement>();
-        crash = GetComponent<BallCrash>();
+        //FindObjectOfType -> singleton or FindWithTag
         bank = FindObjectOfType<Bank>();
         rock = FindObjectOfType<Rock>();
+        point = FindAnyObjectByType<Point>();
+       // instant = GameObject.Find("SpawnManager").GetComponent<InstantiateCreate>();
 
         startScale = new Vector3(0.5f, 0.5f, 0.5f);
         startPosition = new Vector3(0, 0.1f, 1);
@@ -34,6 +38,26 @@ public class Ball : MonoBehaviour
         gameObject.transform.localScale = startScale;
     }
 
+    void Update()
+    {
+        if(gameObject != null)
+        {
+            if (isTriggered == true)
+            {
+                MinusScale();
+                rock.PenaltyPoint();
+                isTriggered = false;
+            }
+            else if (pointTriggered == true)
+            {
+                PointScaling();
+                point.GetPoint();
+                pointTriggered = false;
+                
+            }
+        }
+        
+    }
     void FixedUpdate()
     {
         if (gameObject != null)
@@ -45,34 +69,23 @@ public class Ball : MonoBehaviour
                 gameObject.transform.localScale = startScale;
                 gameObject.transform.localPosition = startPosition;
             }
-            else if (isTriggered == true)
-            {
-                MinusScale();
-                rock.PenaltyPoint();
-                isTriggered = false;
-            }
-
+            
             if (MovementScale.magnitude > upScaleSize)
             {
                 UpScaling();
                 //transform.localRotation = Quaternion.Euler(MovementScale);
                 RewardPoint();
-            } 
+            }
 
-            //if(pointTriggered == true)
-            //{
-            //    PointScaling();
-            //    pointTriggered = false;
-            //    bank.Deposit(bumpPoint);
-            //}
-
+            
         }
     }
 
-    //void PointScaling()
-    //{
-    //    gameObject.transform.localScale += new Vector3(5, 5, 5);
-    //}
+    void PointScaling()
+    {
+        gameObject.transform.localScale += new Vector3(bumpPoint,bumpPoint,bumpPoint);
+        bank.Deposit(bumpPoint);
+    }
 
     public void RewardPoint()
     {
@@ -81,10 +94,15 @@ public class Ball : MonoBehaviour
     }
     void UpScaling()
     {
-        Vector3 ScaleSize = new Vector3(Mathf.Abs(upScaleSize), Mathf.Abs(upScaleSize), Mathf.Abs(upScaleSize));
-        Vector3 upSize = ScaleSize;
-        transform.Translate(upSize / 1.3f + ballVector);
-        Scaling(upSize);
+        //크기 작아질때는 실행 되지 않도록 설정
+        if(isTriggered == false)
+        {
+            Vector3 ScaleSize = new Vector3(Mathf.Abs(upScaleSize), Mathf.Abs(upScaleSize), Mathf.Abs(upScaleSize));
+            Vector3 upSize = ScaleSize;
+            transform.Translate(upSize / 1.3f + ballVector);
+            Scaling(upSize);
+        }
+        
     }
 
     void MinusScale()
@@ -102,17 +120,17 @@ public class Ball : MonoBehaviour
     {
         transform.localScale -= newMinusScale;
     }
-    
 
-    void OnTriggerEnter(Collider other)
+
+    void OnCollisionEnter(Collision collision)
     {
-        if (other.tag == "Rock")
+        if (collision.collider.tag == "Rock")
         {
             isTriggered = true;
         }
-        ///else if(other.tag == "Point")
-        ///{
-        ///    pointTriggered = true;
-        ///}
+        else if (collision.collider.tag == "Point")
+        {
+            pointTriggered = true;
+        }
     }
 }
