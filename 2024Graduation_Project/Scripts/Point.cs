@@ -1,17 +1,61 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class Point : MonoBehaviour
 {
-    [SerializeField] int point = 500;
+    [SerializeField] int point;
+    [SerializeField] TextMeshPro display;
+    [SerializeField] ParticleSystem pointParticle;
+
+    Bank bank;
+    void Start()
+    {
+        bank = FindAnyObjectByType<Bank>();
+        point = Random.Range(1, 5) * 100;
+    }
+
+    void Update()
+    {
+        
+        UpdateDisplay();
+    }
+   //void OnTriggerEnter(Collider other)
+   //{
+   //    Ball ball = other.gameObject.GetComponent<Ball>();
+   //    if (ball != null)
+   //    {
+   //        ball.PointScaling();
+   //    }
+   //    if (bank != null)
+   //    {
+   //        bank.Deposit(point);
+   //    }
+   //    Destroy(this.gameObject);
+   //}
 
     public void GetPoint()
     {
-        Bank bank = GetComponent<Bank>();
-        if (bank == null) { return; }
-        bank.Deposit(point);
+        if (bank != null)
+        {
+            bank.Deposit(point);
+        }
+
+        if (pointParticle != null)
+        {
+            ParticleSystem instantiateParticle = Instantiate(pointParticle, transform.position, transform.rotation);
+
+            instantiateParticle.Play();
+
+            float lifetime = 1f;
+            Destroy(instantiateParticle.gameObject, lifetime);
+        }
         Destroy(this.gameObject);
-        Debug.Log("point up");
+    }
+
+    void UpdateDisplay()
+    {
+        display.text = "+" + point;
     }
 }

@@ -24,6 +24,10 @@ public class Bank : MonoBehaviour
     {
         currentPoint -= Mathf.Abs(point);
         UpdateDisplay();
+        if(currentPoint < startPoint)
+        {
+            currentPoint = startPoint;
+        }
     }
 
     void UpdateDisplay()

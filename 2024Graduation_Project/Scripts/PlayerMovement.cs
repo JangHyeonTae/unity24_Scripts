@@ -9,6 +9,7 @@ using UnityEngine.UIElements;
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 1.0f;
+    //[SerializeField] float slidingPower = 1f;
 
     public VirtualJoystick joystick;
 
@@ -20,6 +21,7 @@ public class PlayerMovement : MonoBehaviour
     private bool hasAnimator;
 
     [SerializeField] private bool isGrounded = false;
+    //[SerializeField] private bool isSlididng = false;
 
     private Rigidbody rigid;
 
@@ -41,6 +43,7 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.applyRootMotion = false;
         }
+        //gameObject.transform.position = new Vector3(-63f, 3.77f, -1f); 
 
     }
 
@@ -50,6 +53,10 @@ public class PlayerMovement : MonoBehaviour
         dirH = joystick.Horizontal();
         dirV = joystick.Vertical();
 
+        //if (isGrounded == false)
+        //{
+        //    isSlididng = true;
+        //}
     }
 
     private void FixedUpdate()
@@ -75,6 +82,7 @@ public class PlayerMovement : MonoBehaviour
         dirMove += camTrans.forward * dirV;
         dirMove += camTrans.right * dirH;
 
+        
         if (dirMove.magnitude > 1f)
         {
             dirMove.Normalize();
@@ -116,7 +124,6 @@ public class PlayerMovement : MonoBehaviour
 
         if (isGrounded)
         {
-            
             rigid.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
             if(jumpForce > 10f && !audioSource.isPlaying)
             {
@@ -133,11 +140,28 @@ public class PlayerMovement : MonoBehaviour
                 animator.SetTrigger("Jump");
             }
         }
-        
-
-
-
     }
+    //public void Sliding()
+    //{
+    //    float slidePower = slidingPower * Time.deltaTime;
+    //
+    //    
+    //    if (isSlididng == true)
+    //    {
+    //        rigid.AddForce(Vector3.forward * slidePower, ForceMode.Impulse);
+    //        isSlididng = false;
+    //        //audioSource.PlayOneShot(slidingSound, 1f);
+    //    }
+    //    //else
+    //    //{
+    //    //    audioSource.Stop();
+    //    //}
+    //
+    //    //if (hasAnimator)
+    //    //{
+    //    //    animator.SetTrigger("Sliding");
+    //    //}
+    //}
 
     private void OnCollisionEnter(Collision collision)
     {

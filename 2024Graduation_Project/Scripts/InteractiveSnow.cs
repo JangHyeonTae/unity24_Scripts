@@ -39,7 +39,7 @@ public class InteractiveSnow : MonoBehaviour
         var material = new Material(_snowMaterial);
 
         _heightMapUpdate = CreateHeightMapUpdate(_snowHeightMapUpdate, _stepPrint);
-        _snowHeightMap = CreateHeightMap(1024, 1024, _heightMapUpdate);
+        _snowHeightMap = CreateHeightMap(512, 512, _heightMapUpdate);
 
         var terrain = gameObject.GetComponent<Terrain>();
         terrain.materialTemplate = material;
