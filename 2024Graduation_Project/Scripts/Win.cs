@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Win : MonoBehaviour
 {
@@ -9,6 +10,14 @@ public class Win : MonoBehaviour
     {
         bank = FindAnyObjectByType<Bank>();
     }
-
+    
+    public void GetClearPoint()
+    {
+        if(bank != null)
+        {
+            bank.ClearPoint();
+        }
+        Destroy(gameObject);
+    }
 
 }

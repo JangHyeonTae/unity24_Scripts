@@ -12,6 +12,7 @@ public class InstantiateCreate : MonoBehaviour
     [SerializeField] GameObject winSpawn;
     private bool stopSpawn = false;
 
+    public bool transPoint = false;
     
     void Start()
     {
@@ -55,6 +56,11 @@ public class InstantiateCreate : MonoBehaviour
         }
     }
 
+
+    public void IsTransPoint()
+    {
+        transPoint = true;
+    }
     public void OnSpawnStop()
     {   
         stopSpawn = true;

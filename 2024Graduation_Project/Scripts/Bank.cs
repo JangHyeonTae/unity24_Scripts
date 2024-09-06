@@ -6,13 +6,18 @@ public class Bank : MonoBehaviour
 {
     int startPoint = 0;
     int currentPoint;
+    int getPoint;
+    int getcurrentPoint;
     [SerializeField] TextMeshProUGUI displayBalance;
+    [SerializeField] TextMeshProUGUI windisplayBalance;
     public int CurrentPoint { get { return currentPoint; } }
 
     void Awake()
     {
         currentPoint = startPoint;
+        getPoint = startPoint;
         UpdateDisplay();
+        UpdateWinDisplay();
     }
     public void Deposit(int point)
     {
@@ -30,8 +35,21 @@ public class Bank : MonoBehaviour
         }
     }
 
+    public void ClearPoint()
+    {
+        getcurrentPoint = currentPoint;
+        Withdraw(currentPoint);
+        getPoint += Mathf.Abs(getcurrentPoint);
+        UpdateWinDisplay();
+    }
+
     void UpdateDisplay()
     {
         displayBalance.text = "POINT: " + currentPoint;
+    }
+
+    void UpdateWinDisplay()
+    {
+        windisplayBalance.text = "GOAL: " + getPoint;
     }
 }

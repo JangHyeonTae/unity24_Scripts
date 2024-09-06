@@ -15,8 +15,8 @@ public class Ball : MonoBehaviour
     Vector3 startScale;
     Vector3 startPosition;
 
-    public bool isTriggered =false;
-    public bool pointTriggered = false;
+    //public bool isTriggered =false;
+    //public bool pointTriggered = false;
 
     Bank bank;
     //private InstantiateCreate instant;
@@ -78,13 +78,13 @@ public class Ball : MonoBehaviour
     void UpScaling()
     {
         //크기 작아질때는 실행 되지 않도록 설정
-        if(isTriggered == false)
-        {
+        //if(isTriggered == false)
+        //{
             Vector3 ScaleSize = new Vector3(Mathf.Abs(upScaleSize)/10, Mathf.Abs(upScaleSize)/10, Mathf.Abs(upScaleSize)/10);
             Vector3 upSize = ScaleSize;
             transform.Translate(upSize / 1.3f + ballVector);
             Scaling(upSize);
-        }
+        //}
         
     }
 
@@ -106,14 +106,15 @@ public class Ball : MonoBehaviour
         transform.localScale -= newMinusScale;
     }
 
-    public void FinishFunction()
+    public void GetPoint()
     {
         TransPoint();
     }
 
     public void TransPoint()
     {
-        
+        gameObject.transform.Translate(startPosition);
+        gameObject.transform.localScale = startScale;
     }
 
    void OnTriggerEnter(Collider other)
@@ -134,8 +135,9 @@ public class Ball : MonoBehaviour
                point.GetPoint();
                 transform.Translate(PointUpMove);
                 break;
-           case "Finish":
-               FinishFunction();
+           case "GetPoint":
+               GetPoint();
+               win.GetClearPoint();
                break;
            default:
                break;
