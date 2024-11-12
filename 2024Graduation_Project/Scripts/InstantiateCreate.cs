@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class InstantiateCreate : MonoBehaviour
 {
@@ -8,8 +9,8 @@ public class InstantiateCreate : MonoBehaviour
     [SerializeField] GameObject rockSpawn;
     [SerializeField] GameObject point;
     [SerializeField] GameObject pointSpawn;
-    [SerializeField] GameObject win;
-    [SerializeField] GameObject winSpawn;
+    [SerializeField] GameObject ball;
+    [SerializeField] GameObject ballSpawn;
     private bool stopSpawn = false;
 
     public bool transPoint = false;
@@ -18,41 +19,43 @@ public class InstantiateCreate : MonoBehaviour
     {
         StartCoroutine(RockSpawnRoutine());
         StartCoroutine(PointSpawnRoutine());
-        StartCoroutine(WinSpawnRoutine());
+        StartCoroutine(BallSpawnRoutine());
     }
 
-
+    [PunRPC]
     IEnumerator RockSpawnRoutine()
     {
         while(stopSpawn == false)
         {
             Vector3 rockPosition = new Vector3(Random.Range(0, 80), 5, Random.Range(0, 80));
-            GameObject rockContainer = Instantiate(rock, rockPosition, Quaternion.identity);
+            GameObject rockContainer = PhotonNetwork.Instantiate("Rock", rockPosition, Quaternion.identity);
             rockContainer.transform.parent = rockSpawn.transform;
             yield return new WaitForSeconds(Random.Range(3f,5f));
         }
     }
 
+    [PunRPC]
     IEnumerator PointSpawnRoutine()
     {
         while (stopSpawn == false)
         {
             
             Vector3 pointPosition = new Vector3(Random.Range(0, 80), 3, Random.Range(0, 80));
-            GameObject pointContainer = Instantiate(point, pointPosition, Quaternion.identity);
+            GameObject pointContainer = PhotonNetwork.Instantiate("Point", pointPosition, Quaternion.identity);
             pointContainer.transform.parent = pointSpawn.transform;
             yield return new WaitForSeconds(Random.Range(4f,7f));
         }
     }
 
-    IEnumerator WinSpawnRoutine()
+    [PunRPC]
+    IEnumerator BallSpawnRoutine()
     {
         while(stopSpawn == false)
         {
-            Vector3 winPosition = new Vector3(Random.Range(3, 70), 0, Random.Range(3, 70));
-            GameObject winContainer = Instantiate(win, winPosition, Quaternion.identity);
-            winContainer.transform.parent = winSpawn.transform;
-            yield return new WaitForSeconds(Random.Range(8f, 20f));
+            Vector3 ballPosition = new Vector3(Random.Range(3, 70), 3, Random.Range(3, 70));
+            GameObject ballContainer = PhotonNetwork.Instantiate("Ball", ballPosition, Quaternion.identity);
+            ballContainer.transform.parent = ballSpawn.transform;
+            yield return new WaitForSeconds(Random.Range(3f, 10f));
         }
     }
 

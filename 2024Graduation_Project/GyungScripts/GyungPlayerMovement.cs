@@ -1,14 +1,21 @@
+using Photon.Pun;
 using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
-
-public class PlayerMovement : MonoBehaviour
+using UnityEditor;
+using System.Diagnostics.CodeAnalysis;
+using UnityEngine.UIElements;
+    
+public class GyungPlayerMovement : MonoBehaviourPun
 {
+    public static GyungPlayerMovement Instance;
+
     [SerializeField] float moveSpeed = 1.0f;
     [SerializeField] float changeMoveSpeed = 1.5f;
     [SerializeField] GameObject ball;
-    [SerializeField] private int powerUpId;
-    //[SerializeField] float slidingPower = 1f;
-
+    [SerializeField] float slidingPower = 1f;
+    public GameObject mobilePad;
     public VirtualJoystick joystick;
 
     public Transform target;
@@ -27,37 +34,54 @@ public class PlayerMovement : MonoBehaviour
 
     public float turnSpeed = 10f;
 
-    AudioSource audioSource;
-    public AudioClip walkSound;
-    public AudioClip jumpSound;
+    //AudioSource audioSource;
+    //public AudioClip walkSound;
+    //public AudioClip jumpSound;
 
     Ball ballScript;
 
-    //���ǵ��
+    //스피드업
     [SerializeField] bool isSpeedUpActive = false;
 
 
-    void Start()
+    private void Awake()
+    {
+        Instance = this;
+    }
+    private void Start()
     {
         hasAnimator = TryGetComponent(out animator);
         animator = GetComponent<Animator>();
         rigid = GetComponent<Rigidbody>();
-        audioSource = GetComponent<AudioSource>();
+        joystick = FindObjectOfType<VirtualJoystick>();
+        //audioSource = GetComponent<AudioSource>();
         if (hasAnimator)
         {
             animator.applyRootMotion = false;
         }
         //gameObject.transform.position = new Vector3(-63f, 3.77f, -1f); 
+        if (photonView.IsMine)
+        {
+            SetupMobilePad();
+        }
 
     }
 
 
-    void Update()
+    private void Update()
     {
-        dirH = joystick.Horizontal();
-        dirV = joystick.Vertical();
-
+        // 로컬 플레이어가 아닌 경우 입력을 받지 않음
+        if (!photonView.IsMine)
+        {
+            return;
+        }
+        else
+        {
+            dirH = joystick.Horizontal();
+            dirV = joystick.Vertical();
+        }
         
+
         //if (isGrounded == false)
         //{
         //    isSlididng = true;
@@ -66,19 +90,25 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // 로컬 플레이어만 직접 위치와 회전 변경 가능
+        if (!photonView.IsMine)
+        {
+            return;
+        }
+
         if (isGrounded)
         {
-            Vector3 velocity = new Vector3();
-            if(isSpeedUpActive == false)
+            Vector3 velocity = Time.deltaTime * moveSpeed * InputDirection();
+            if (isSpeedUpActive == false)
             {
                 velocity = Time.deltaTime * moveSpeed * InputDirection();
             }
             else
             {
-                velocity = Time.deltaTime* moveSpeed * changeMoveSpeed * InputDirection();
+                velocity = Time.deltaTime * moveSpeed * changeMoveSpeed * InputDirection();
             }
-            
             rigid.MovePosition(transform.position + velocity);
+            
         }
         
     }
@@ -88,9 +118,14 @@ public class PlayerMovement : MonoBehaviour
         Rotation();
     }
 
+    void SetupMobilePad()
+    {
+        mobilePad = Instantiate(Resources.Load(mobilePad.name) as GameObject);
+        mobilePad.transform.SetParent(transform);
+    }
+
     public Vector3 InputDirection()
     {
-
         Vector3 dirMove = Vector3.zero;
         dirMove += camTrans.forward * dirV;
         dirMove += camTrans.right * dirH;
@@ -117,20 +152,21 @@ public class PlayerMovement : MonoBehaviour
         Vector3 MoveDirection = InputDirection();
         if (MoveDirection.magnitude >= 0.001f)
         {
-            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + dirH * 2, transform.rotation.eulerAngles.z);
-            if (!audioSource.isPlaying)
-            {
-                audioSource.PlayOneShot(walkSound, .5f);
-            }
-            else
-        {
-            audioSource.Stop();
-        }
+            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + dirH, transform.rotation.eulerAngles.z);
+            //if (!audioSource.isPlaying)
+            //{
+            //    audioSource.PlayOneShot(walkSound, .5f);
+            //}
+            //else
+            //
+            //{
+            //       audioSource.Stop();
+            //}
         }
         
     }
 
-
+    
     public void Jump(float jumpForce)
     {
         float jumpPower = jumpForce * Time.deltaTime;
@@ -138,15 +174,15 @@ public class PlayerMovement : MonoBehaviour
         if (isGrounded)
         {
             rigid.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
-            if(jumpForce > 10f && !audioSource.isPlaying)
+            if(jumpForce > 10f /*&& !audioSource.isPlaying*/)
             {
-                audioSource.PlayOneShot(jumpSound, 1f);
+                //audioSource.PlayOneShot(jumpSound, 1f);
                 isGrounded = false;
             }
-            else
-            {
-                audioSource.Stop();
-            }
+            //else
+            //{
+            //    audioSource.Stop();
+            //}
 
             if (hasAnimator)
             {
@@ -175,29 +211,36 @@ public class PlayerMovement : MonoBehaviour
     //    //    animator.SetTrigger("Sliding");
     //    //}
     //}
+    [PunRPC]
     public void Catch()
     {
+        if (!photonView.IsMine) return;
         ball.gameObject.SetActive(true);
     }
 
+    [PunRPC]
     private void Restart()
     {
-        GetComponent<PlayerMovement>().enabled = true;
+        GetComponent<GyungPlayerMovement>().enabled = true;
         if (hasAnimator)
         {
             animator.SetBool("Hit", false);
         }
-    }   
+    }
+
+    [PunRPC]
     public void StartSpinSquence()
     {
         float restart = 2f;
-        GetComponent<PlayerMovement>().enabled = false;
+        GetComponent<GyungPlayerMovement>().enabled = false;
         if (hasAnimator)
         {
             animator.SetBool("Hit", true);
         }
         Invoke("Restart", restart);
     }
+
+    [PunRPC]
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
@@ -206,18 +249,18 @@ public class PlayerMovement : MonoBehaviour
         }
 
         switch (collision.collider.tag)
-        {
-            case "ball":
-                Catch();
-                break;
-            case "SpeedUp":
-                SpeedPowerActive();
-                break;
-            case "Spin":
-                StartSpinSquence();
-                break;
-            default: 
-                break;
+            {
+                case "Ball":
+                    Catch();
+                    break;
+                case "SpeedUp":
+                    SpeedPowerActive();
+                    break;
+                case "Spin":
+                    StartSpinSquence();
+                    break;
+                default:
+                    break;
         }
     }
 

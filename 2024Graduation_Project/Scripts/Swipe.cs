@@ -11,11 +11,11 @@ public class Swipe : MonoBehaviour
     private float minDistanceForSwipe = 20f;
 
 
-    PlayerMovement playerMovement;
+    GyungPlayerMovement playerMovement;
 
     private void Start()
     {
-        playerMovement = GetComponent<PlayerMovement>();
+        playerMovement = GetComponent<GyungPlayerMovement>();
 
     }
 

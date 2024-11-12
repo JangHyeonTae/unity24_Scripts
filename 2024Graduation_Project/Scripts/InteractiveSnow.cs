@@ -69,7 +69,10 @@ public class InteractiveSnow : MonoBehaviour
         _index++;
 
         if (_index >= _trailsPositions.Length)
+        {
             _index = 0;
+        }
+            
     }
 
     private CustomRenderTexture CreateHeightMap(int weight, int height, Material material)

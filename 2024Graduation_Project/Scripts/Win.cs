@@ -17,7 +17,6 @@ public class Win : MonoBehaviour
         {
             bank.ClearPoint();
         }
-        Destroy(gameObject);
     }
 
 }

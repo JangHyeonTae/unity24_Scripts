@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class Rock : MonoBehaviour
+using Photon.Pun;
+public class Rock : MonoBehaviourPun
 {
     [SerializeField] int penalty = 500;
-    [SerializeField] ParticleSystem bombParticle;
+    [SerializeField] GameObject bombParticle;
 
     Bank bank;
     void Start()
@@ -14,19 +14,8 @@ public class Rock : MonoBehaviour
     }
 
 
-    //void OnTriggerEnter(Collider other)
-    //{
-    //    Ball ball = other.gameObject.GetComponent<Ball>();
-    //    if (ball != null)
-    //    {
-    //        ball.MinusScale();
-    //    }
-    //    if (bank != null)
-    //    {
-    //        bank.Withdraw(penalty);
-    //    }
-    //    Destroy(this.gameObject);
-    //}
+
+    [PunRPC]
     public void PenaltyPoint()
     {
         if (bank != null)
@@ -36,14 +25,10 @@ public class Rock : MonoBehaviour
 
         if(bombParticle != null)
         {
-            ParticleSystem instantiateParticle = Instantiate(bombParticle, transform.position, transform.rotation);
-
-            instantiateParticle.Play();
-
-            float lifetime = 1f;
-            Destroy(instantiateParticle.gameObject, lifetime);
+            PhotonNetwork.Instantiate(bombParticle.name, transform.position, Quaternion.identity);
         }
 
-        Destroy(this.gameObject);
+        PhotonNetwork.Destroy(this.gameObject);
     }
+
 }

@@ -1,19 +1,24 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-public class Ball : MonoBehaviour
+public class Ball : MonoBehaviourPun
 {
+    PhotonView photonView;
     public Vector3 MovementScale;
     [SerializeField] float upScaleSize = 0.001f;
     [SerializeField] Vector3 ballVector = new Vector3(-0.001f,0,0);
     [SerializeField] Vector3 PointUpMove = new Vector3(0, 0, 1);
+    [SerializeField] GameObject ballActive;
+    GyungPlayerMovement movement;
 
-    PlayerMovement movement;
-
-    Vector3 startScale;
-    Vector3 startPosition;
+    //Vector3 instantScale;
+    Vector3 startScale = new Vector3(0.5f, 0.5f, 0.5f);
+    Vector3 startPosition = new Vector3(0, 0.1f, 1);
 
     //public bool isTriggered =false;
     //public bool pointTriggered = false;
@@ -25,16 +30,13 @@ public class Ball : MonoBehaviour
 
     void Awake()
     {
-        //싱글톤 공부
-        movement = FindObjectOfType<PlayerMovement>();
-        //FindObjectOfType -> singleton or FindWithTag
+        movement = FindObjectOfType<GyungPlayerMovement>();
         bank = FindObjectOfType<Bank>();
     }
     void Start()
     {
         startScale = new Vector3(0.5f, 0.5f, 0.5f);
         startPosition = new Vector3(0, 0.1f, 1);
-
         gameObject.transform.localScale = startScale;
     }
 
@@ -42,13 +44,6 @@ public class Ball : MonoBehaviour
     {
         if (gameObject != null)
         {
-            MovementScale = movement.InputDirection();
-
-            if(gameObject.transform.localScale.x < startScale.x)
-            {
-                gameObject.transform.localScale = startScale;
-                gameObject.transform.localPosition = startPosition;
-            }
             
             if (MovementScale.magnitude > upScaleSize)
             {
@@ -57,6 +52,28 @@ public class Ball : MonoBehaviour
                 RewardPoint();
             }
             //gameObject.transform.rotation = Quaternion.Euler()
+        }
+        //if (photonView.IsMine)
+        //{
+        //  photonView.RPC("WorldBallActive", RpcTarget.All);
+        //}
+        WorldBallActive();
+    }
+
+    [PunRPC]
+    public void WorldBallActive()
+    {
+        if(gameObject != null)
+        {
+            MovementScale = movement.InputDirection();
+
+            if (gameObject.transform.localScale.x < startScale.x)
+            {
+                gameObject.transform.localScale = startScale;
+                gameObject.transform.localPosition = startPosition;
+                ballActive.gameObject.SetActive(false);
+            }
+
         }
     }
 
@@ -67,6 +84,7 @@ public class Ball : MonoBehaviour
         bank.Deposit(bumpPoint);
     }
 
+    [PunRPC]
     //Bank script에 pointup 할당
     public void RewardPoint()
     {
@@ -75,9 +93,9 @@ public class Ball : MonoBehaviour
     }
 
     //움직일경우 눈 크기 커지는 함수
+    [PunRPC]
     void UpScaling()
     {
-        //크기 작아질때는 실행 되지 않도록 설정
         //if(isTriggered == false)
         //{
             Vector3 ScaleSize = new Vector3(Mathf.Abs(upScaleSize)/10, Mathf.Abs(upScaleSize)/10, Mathf.Abs(upScaleSize)/10);
@@ -95,6 +113,7 @@ public class Ball : MonoBehaviour
     }
 
     //돌과 충돌시 (5,5,5)만큼의 크기 줄이는함수
+    [PunRPC]
     public void MinusScale()
     {
         Vector3 MinusScaleSize = new Vector3(5, 5, 5);
@@ -106,6 +125,7 @@ public class Ball : MonoBehaviour
         transform.localScale -= newMinusScale;
     }
 
+    [PunRPC]
     public void GetPoint()
     {
         TransPoint();
@@ -115,8 +135,10 @@ public class Ball : MonoBehaviour
     {
         gameObject.transform.Translate(startPosition);
         gameObject.transform.localScale = startScale;
+        ballActive.gameObject.SetActive(false);
     }
 
+    [PunRPC]
    void OnTriggerEnter(Collider other)
    {
        Rock rock = other.gameObject.GetComponent<Rock>();
@@ -125,22 +147,25 @@ public class Ball : MonoBehaviour
       
        switch (other.tag)
        {
-           case "Rock":
-               MinusScale();
-               rock.PenaltyPoint(); 
+            case "Rock":
+                MinusScale();
+                rock.PenaltyPoint();
                 transform.Translate(-PointUpMove);
+                 break;
+            case "Point":
+                PointScaling();
+                point.GetPoint();
+                 transform.Translate(PointUpMove);
+                 break;
+            case "GetPoint":
+                GetPoint();
+                win.GetClearPoint();
+                 break;
+            case "Spin":
+                ballActive.gameObject.SetActive(false);
+                 break;
+            default:
                 break;
-           case "Point":
-               PointScaling();
-               point.GetPoint();
-                transform.Translate(PointUpMove);
-                break;
-           case "GetPoint":
-               GetPoint();
-               win.GetClearPoint();
-               break;
-           default:
-               break;
        }
    }
 }
